@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Metronom + Tour Tempo</title>
+<meta name="description" content="Metronom pro hudbu a trenažér tempa golfového švihu. Funguje offline, data zůstávají v telefonu.">
+<meta name="theme-color" content="#0F1D17" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#EEF0EA" media="(prefers-color-scheme: light)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Metronom">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <div class="topbar">
+    <h1 id="viewTitle">Metronom</h1>
+    <span class="hint" id="topNote"></span>
+  </div>
+
+  <!-- ============================ METRONOM ============================ -->
+  <section id="view-music" role="tabpanel" aria-labelledby="tab-music">
+
+    <div class="dial">
+      <svg viewBox="0 0 200 200" aria-hidden="true" focusable="false">
+        <circle class="pulse" id="mPulse" cx="100" cy="100" r="96"></circle>
+        <circle class="ring-bg" cx="100" cy="100" r="86"></circle>
+        <path class="ring-fill" id="mRing" d=""></path>
+        <g id="mTicks"></g>
+        <line class="hand" id="mHand" x1="100" y1="100" x2="100" y2="26"></line>
+        <circle class="hub" cx="100" cy="100" r="4.5"></circle>
+      </svg>
+      <div class="readout">
+        <div class="big" id="mBig">100</div>
+        <div class="big-label">úderů za minutu</div>
+        <div class="big-note" id="mNote"></div>
+      </div>
+    </div>
+    <p class="sr" id="mLive" aria-live="polite"></p>
+
+    <div class="dots" id="mDots"></div>
+
+    <div class="transport">
+      <button class="step" id="mMinus" aria-label="Zpomalit o jeden úder">&minus;</button>
+      <button class="play" id="mPlay">Spustit</button>
+      <button class="step" id="mPlus" aria-label="Zrychlit o jeden úder">+</button>
+    </div>
+
+    <div class="card">
+      <label class="sr" for="bpmRange">Tempo v úderech za minutu</label>
+      <input type="range" id="bpmRange" min="30" max="260" value="100" step="1">
+      <div class="row">
+        <span class="hint" id="tempoName">Andante</span>
+        <span class="hint">30&ndash;260</span>
+      </div>
+      <button class="tap-btn" id="tapBtn">Ťukni tempo</button>
+    </div>
+
+    <details>
+      <summary>Takt a dělení</summary>
+      <div class="body">
+        <div class="row">
+          <div class="stack">
+            <label class="lbl" for="beats">Dob v taktu</label>
+            <span class="hint">První doba je zdůrazněná</span>
+          </div>
+          <select id="beats"></select>
+        </div>
+        <div class="row"><div class="stack"><span class="lbl" id="subLbl">Dělení doby</span></div></div>
+        <div class="seg" id="subSeg" role="group" aria-labelledby="subLbl" style="margin-top:-6px">
+          <button type="button" data-sub="1" aria-label="Dělení doby: Čtvrtky" aria-pressed="true">Čtvrtky</button>
+          <button type="button" data-sub="2" aria-label="Dělení doby: Osminy" aria-pressed="false">Osminy</button>
+          <button type="button" data-sub="3" aria-label="Dělení doby: Triola" aria-pressed="false">Triola</button>
+          <button type="button" data-sub="4" aria-label="Dělení doby: Šestnáctiny" aria-pressed="false">Šestnáctiny</button>
+        </div>
+        <div class="row">
+          <div class="stack">
+            <label class="lbl" for="swing">Swing</label>
+            <span class="hint">Jen u osmin. 100 % je triolový feel.</span>
+            <input type="range" id="swing" min="0" max="100" value="0">
+          </div>
+          <span class="val" id="swingVal">0 %</span>
+        </div>
+        <div class="row">
+          <div class="stack"><span class="lbl" id="accentLbl">Přízvuk na první době</span></div>
+          <button type="button" class="sw" id="accent" aria-label="Přízvuk na první době" aria-pressed="true" aria-labelledby="accentLbl"></button>
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Trénink</summary>
+      <div class="body">
+        <div class="row">
+          <div class="stack">
+            <span class="lbl" id="trLbl">Postupné zrychlování</span>
+            <span class="hint" id="trHint"></span>
+          </div>
+          <button type="button" class="sw" id="trainerOn" aria-label="Postupné zrychlování" aria-pressed="false" aria-labelledby="trLbl"></button>
+        </div>
+        <div class="row">
+          <div class="stack"><label class="hint" for="trStep">Přidat úderů</label>
+            <input type="range" id="trStep" min="1" max="20" value="5"></div>
+          <span class="val" id="trStepVal">+5</span>
+        </div>
+        <div class="row">
+          <div class="stack"><label class="hint" for="trBars">Po kolika taktech</label>
+            <input type="range" id="trBars" min="1" max="16" value="4"></div>
+          <span class="val" id="trBarsVal">4</span>
+        </div>
+        <div class="row">
+          <div class="stack"><label class="hint" for="trMax">Strop tempa</label>
+            <input type="range" id="trMax" min="40" max="260" value="180"></div>
+          <span class="val" id="trMaxVal">180</span>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="stack">
+            <span class="lbl" id="silLbl">Tiché takty</span>
+            <span class="hint" id="silHint"></span>
+          </div>
+          <button type="button" class="sw" id="silentOn" aria-label="Tiché takty" aria-pressed="false" aria-labelledby="silLbl"></button>
+        </div>
+        <div class="row">
+          <div class="stack"><label class="hint" for="silPlay">Znějících taktů</label>
+            <input type="range" id="silPlay" min="1" max="8" value="2"></div>
+          <span class="val" id="silPlayVal">2</span>
+        </div>
+        <div class="row">
+          <div class="stack"><label class="hint" for="silMute">Tichých taktů</label>
+            <input type="range" id="silMute" min="1" max="8" value="2"></div>
+          <span class="val" id="silMuteVal">2</span>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="stack">
+            <label class="lbl" for="countIn">Nádech před startem</label>
+            <span class="hint">Takty navíc, než se spustí trénink</span>
+            <input type="range" id="countIn" min="0" max="4" value="0"></div>
+          <span class="val" id="countInVal">0</span>
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Předvolby</summary>
+      <div class="body">
+        <div class="chips" id="musicPresets"></div>
+        <div class="row" style="margin-top:12px">
+          <label class="sr" for="mPresetName">Název nové předvolby</label>
+          <input type="text" id="mPresetName" placeholder="Název předvolby" style="flex:1">
+          <button type="button" class="btn" id="mPresetSave" aria-label="Uložit předvolbu metronomu">Uložit</button>
+        </div>
+        <p class="hint" style="margin-top:8px">Uloží aktuální tempo, takt, dělení a swing.</p>
+      </div>
+    </details>
+
+    <footer>
+      <kbd>mezerník</kbd> start · <kbd>↑</kbd><kbd>↓</kbd> tempo · <kbd>T</kbd> ťuknutí tempa
+    </footer>
+  </section>
+
+  <!-- ============================== GOLF ============================== -->
+  <section id="view-golf" role="tabpanel" aria-labelledby="tab-golf" hidden>
+
+    <div class="dial">
+      <svg viewBox="0 0 200 200" aria-hidden="true" focusable="false">
+        <circle class="pulse" id="gPulse" cx="100" cy="100" r="96"></circle>
+        <circle class="ring-bg" cx="100" cy="100" r="86"></circle>
+        <path class="ring-fill" id="gRing" d=""></path>
+        <g id="gTicks"></g>
+        <line class="hand" id="gHand" x1="100" y1="100" x2="100" y2="26"></line>
+        <circle class="hub" cx="100" cy="100" r="4.5"></circle>
+      </svg>
+      <div class="readout">
+        <div class="big" id="gBig">24/8</div>
+        <div class="big-label" id="gLabel">snímků · 3:1</div>
+        <div class="big-note" id="gNote"></div>
+      </div>
+    </div>
+    <p class="sr" id="gLive" aria-live="polite"></p>
+
+    <div class="gdots" id="gDots">
+      <div class="gdot"><i></i>Start</div>
+      <div class="gdot"><i></i>Vrchol</div>
+      <div class="gdot"><i></i>Úder</div>
+    </div>
+    <div class="ratiobar" id="gRatiobar"><i style="flex:3"></i><i style="flex:1"></i></div>
+
+    <div class="transport">
+      <button class="step" id="gMinus" aria-label="Zpomalit o jeden snímek">&minus;</button>
+      <button class="play" id="gPlay">Spustit</button>
+      <button class="step" id="gPlus" aria-label="Zrychlit o jeden snímek">+</button>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="stack">
+          <span class="lbl">Švihů v tomto sezení</span>
+          <span class="hint" id="gGoalHint"></span>
+        </div>
+        <span class="val" id="gReps" style="font-size:24px">0</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="chips" id="golfPresets"></div>
+    </div>
+
+    <details>
+      <summary>Nastavení švihu</summary>
+      <div class="body">
+        <div class="row">
+          <div class="stack">
+            <label class="lbl" for="gRatio">Poměr nápřah : dopad</label>
+            <span class="hint">3:1 plná hra, 2:1 krátká hra</span>
+          </div>
+          <select id="gRatio">
+            <option value="3">3 : 1</option>
+            <option value="2.5">2,5 : 1</option>
+            <option value="2">2 : 1</option>
+            <option value="1.733">1,73 : 1</option>
+          </select>
+        </div>
+        <div class="row">
+          <div class="stack">
+            <label class="lbl" for="gBack">Délka nápřahu</label>
+            <span class="hint">Ve snímcích videa při 30 snímcích za sekundu</span>
+            <input type="range" id="gBack" min="12" max="36" value="24">
+          </div>
+          <span class="val" id="gBackVal">24</span>
+        </div>
+        <div class="row">
+          <div class="stack">
+            <label class="lbl" for="gGap">Pauza mezi švihy</label>
+            <input type="range" id="gGap" min="6" max="80" value="14">
+          </div>
+          <span class="val" id="gGapVal">1,4 s</span>
+        </div>
+        <div class="row">
+          <div class="stack">
+            <label class="lbl" for="gJitter">Náhodné kolísání pauzy</label>
+            <span class="hint">Aby sis na rytmus nezvykl a tóny nepředbíhal</span>
+            <input type="range" id="gJitter" min="0" max="20" value="0">
+          </div>
+          <span class="val" id="gJitterVal">0 s</span>
+        </div>
+        <div class="row">
+          <div class="stack">
+            <span class="lbl" id="gPrepLbl">Dva tiky před švihem</span>
+            <span class="hint">Upozorní tě, že švih za chvíli začne</span>
+          </div>
+          <button type="button" class="sw" id="gPrep" aria-label="Dva tiky před švihem" aria-pressed="false" aria-labelledby="gPrepLbl"></button>
+        </div>
+        <div class="row">
+          <div class="stack">
+            <label class="lbl" for="gGoal">Cíl švihů na sezení</label>
+            <span class="hint">0 znamená bez cíle</span>
+            <input type="range" id="gGoal" min="0" max="100" step="5" value="30">
+          </div>
+          <span class="val" id="gGoalVal">30</span>
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Vlastní předvolby</summary>
+      <div class="body">
+        <div class="chips" id="golfUserPresets"></div>
+        <div class="row" style="margin-top:12px">
+          <label class="sr" for="gPresetName">Název nové předvolby</label>
+          <input type="text" id="gPresetName" placeholder="Např. Driver" style="flex:1">
+          <button type="button" class="btn" id="gPresetSave" aria-label="Uložit předvolbu švihu">Uložit</button>
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Co ta čísla znamenají</summary>
+      <div class="body">
+        <p class="hint">
+          Čísla jako 24/8 jsou počty snímků videa při 30 snímcích za sekundu: 24 snímků
+          nápřah (0,80 s) a 8 snímků dopad (0,27 s). Poměr 3:1 pochází z analýzy
+          švihů hráčů na PGA Tour, kterou publikoval John Novosel v knize Tour Tempo.
+          Krátká hra a putt používají poměr 2:1.
+        </p>
+        <p class="hint" style="margin-top:8px">
+          Měření při 60 snímcích za sekundu později ukázalo, že hráči se pohybují
+          zhruba mezi 2,25:1 a 3,25:1, takže 3:1 je střed rozptylu, ne pevné pravidlo.
+          Předvolba 24/14 odpovídá tomu, co je slyšet v některých zpomalených videích.
+        </p>
+        <p class="hint" style="margin-top:8px">
+          Tóny v této appce jsou syntetizované. Appka nijak nesouvisí
+          s vlastníky značky Tour Tempo.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- =========================== STATISTIKY =========================== -->
+  <section id="view-stats" role="tabpanel" aria-labelledby="tab-stats" hidden>
+
+    <div class="seg" id="periodSeg" role="group" aria-label="Období">
+      <button type="button" data-days="7" aria-pressed="true">7 dní</button>
+      <button type="button" data-days="30" aria-pressed="false">30 dní</button>
+      <button type="button" data-days="0" aria-pressed="false">Vše</button>
+    </div>
+
+    <div id="statsBody" hidden>
+      <div class="kpis">
+        <div class="kpi"><b id="kReps">0</b><span>švihů</span></div>
+        <div class="kpi"><b id="kMin">0</b><span>minut cvičení</span></div>
+        <div class="kpi"><b id="kStreak">0</b><span id="kStreakLbl">dní v řadě</span></div>
+      </div>
+
+      <div class="card">
+        <h2>Aktivita po dnech</h2>
+        <svg class="chart" id="chart" role="img" aria-labelledby="chartDesc"></svg>
+        <p class="sr" id="chartDesc"></p>
+        <div class="legend">
+          <span><i style="background:var(--accent)"></i>Golf (švihy)</span>
+          <span><i style="background:var(--impact)"></i>Hudba (minuty)</span>
+        </div>
+      </div>
+
+      <div class="card" id="tempoBreakdown">
+        <h2>Nejčastější tempa</h2>
+        <div id="tempoList" style="margin-top:8px"></div>
+      </div>
+
+      <div class="card">
+        <h2>Poslední sezení</h2>
+        <ul class="sessions" id="sessionList"></ul>
+      </div>
+    </div>
+
+    <div class="empty" id="statsEmpty">
+      <p>Zatím tu nic není.</p>
+      <p class="hint" style="margin-top:6px">
+        Sezení se zapíše samo, jakmile metronom necháš běžet aspoň 20 sekund
+        nebo odswihneš aspoň tři švihy.
+      </p>
+      <button type="button" class="btn primary" id="statsGo">Jdi trénovat</button>
+    </div>
+  </section>
+
+  <!-- =========================== NASTAVENÍ ============================ -->
+  <section id="view-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+
+    <div class="card">
+      <h2>Vzhled</h2>
+      <div class="row" style="margin-top:10px">
+        <div class="stack"><span class="lbl" id="themeLbl">Motiv</span>
+          <span class="hint">Na slunci se hodí světlý</span></div>
+      </div>
+      <div class="seg" id="themeSeg" role="group" aria-labelledby="themeLbl" style="margin-top:4px">
+        <button type="button" data-theme="auto" aria-pressed="true">Systém</button>
+        <button type="button" data-theme="light" aria-pressed="false">Světlý</button>
+        <button type="button" data-theme="dark" aria-pressed="false">Tmavý</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Zvuk</h2>
+      <div class="row" style="margin-top:10px">
+        <div class="stack"><label class="lbl" for="sound">Zvuk metronomu</label>
+          <span class="hint">Golfový režim používá vždy tři tóny Tour Tempo</span></div>
+        <select id="sound">
+          <option value="wood">Dřívko</option>
+          <option value="beep">Pípnutí</option>
+          <option value="tick">Tik</option>
+          <option value="cowbell">Zvonec</option>
+          <option value="puls">Měkký puls</option>
+          <option value="tour">Tour Tempo</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="stack"><label class="lbl" for="vol">Hlasitost</label>
+          <input type="range" id="vol" min="0" max="100" value="80"></div>
+        <span class="val" id="volVal">80 %</span>
+      </div>
+      <div class="row">
+        <div class="stack"><span class="lbl" id="vibLbl">Vibrace na dobu</span>
+          <span class="hint">Funguje jen na některých telefonech, na iPhonu ne</span></div>
+        <button type="button" class="sw" id="vibrate" aria-label="Vibrace na dobu" aria-pressed="false" aria-labelledby="vibLbl"></button>
+      </div>
+      <div class="row">
+        <div class="stack"><span class="lbl" id="wakeLbl">Nechat displej svítit</span>
+          <span class="hint">Jen když metronom běží</span></div>
+        <button type="button" class="sw" id="wake" aria-label="Nechat displej svítit" aria-pressed="true" aria-labelledby="wakeLbl"></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Záznam tréninku</h2>
+      <div class="row" style="margin-top:10px">
+        <div class="stack"><span class="lbl" id="logLbl">Zapisovat sezení</span>
+          <span class="hint">Bez toho zůstanou statistiky prázdné</span></div>
+        <button type="button" class="sw" id="logOn" aria-label="Zapisovat sezení" aria-pressed="true" aria-labelledby="logLbl"></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Data</h2>
+      <p class="hint" style="margin-top:8px">
+        Všechno, co appka ukládá, leží jen v tomhle telefonu. Zálohu si udělej před
+        výměnou telefonu nebo mazáním dat prohlížeče.
+      </p>
+      <div class="btnrow">
+        <button type="button" class="btn" id="btnExport">Exportovat zálohu</button>
+        <button type="button" class="btn" id="btnImport">Importovat zálohu</button>
+      </div>
+      <input type="file" id="fileImport" accept="application/json,.json" class="sr" aria-hidden="true" tabindex="-1">
+      <div class="btnrow">
+        <button type="button" class="btn danger wide" id="btnWipe">Smazat všechna data</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>O appce a datech</h2>
+      <p class="hint" style="margin-top:8px">
+        Metronom pro hudbu a trenažér tempa golfového švihu. Appka běží celá
+        v prohlížeči, funguje offline a nepotřebuje přihlášení.
+      </p>
+      <p class="hint" style="margin-top:8px">
+        <b>Co se ukládá:</b> tvoje nastavení, uložené předvolby a záznamy sezení
+        (datum, délka, režim, tempo, počet švihů). Nic jiného.
+        <b>Kam:</b> do úložiště prohlížeče v tomhle zařízení.
+        <b>Komu se to posílá:</b> nikomu. Appka nevolá žádné cizí servery,
+        nepoužívá analytiku ani reklamu, takže nepotřebuje ani souhlas s cookies.
+      </p>
+      <p class="hint" style="margin-top:8px">
+        Pokud appku hostuješ na GitHub Pages, GitHub jako provozovatel hostingu
+        zpracovává při načtení stránky technické údaje včetně IP adresy.
+        Smazat všechno jde tlačítkem výš.
+      </p>
+      <p class="hint" style="margin-top:8px">
+        Appka nenahrazuje trenéra ani lékařskou radu. Verze <span id="appVer">1.0</span>.
+      </p>
+    </div>
+  </section>
+
+</div>
+
+<nav class="nav" role="tablist" aria-label="Hlavní navigace">
+  <button type="button" id="tab-music"    role="tab" aria-selected="true"  aria-controls="view-music"><span class="ic" aria-hidden="true">◴</span>Metronom</button>
+  <button type="button" id="tab-golf"     role="tab" aria-selected="false" aria-controls="view-golf"><span class="ic" aria-hidden="true">⛳</span>Golf</button>
+  <button type="button" id="tab-stats"    role="tab" aria-selected="false" aria-controls="view-stats"><span class="ic" aria-hidden="true">▥</span>Statistiky</button>
+  <button type="button" id="tab-settings" role="tab" aria-selected="false" aria-controls="view-settings"><span class="ic" aria-hidden="true">⚙</span>Nastavení</button>
+</nav>
+
+<dialog id="confirmDlg" aria-labelledby="confirmTitle">
+  <h2 id="confirmTitle">Smazat všechna data?</h2>
+  <p class="hint" id="confirmText">Smažou se nastavení, předvolby i všechna zaznamenaná sezení. Vrátit to nepůjde.</p>
+  <div class="btnrow">
+    <button type="button" class="btn" id="confirmNo">Zrušit</button>
+    <button type="button" class="btn danger" id="confirmYes">Smazat</button>
+  </div>
+</dialog>
+
+<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js').catch(function (err) { console.warn('SW:', err); });
+    });
+  }
+</script>
+</body>
+</html>
