@@ -1,6 +1,6 @@
 /* Metronom + Tour Tempo — service worker.
    Po KAŽDÉ úpravě souborů zvyš VERSION, jinak si telefon nechá starou verzi. */
-const VERSION = 'v2';
+const VERSION = 'v4';
 const CACHE = `metronom-${VERSION}`;
 const ASSETS = [
   './',

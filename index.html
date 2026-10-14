@@ -34,8 +34,7 @@
         <circle class="ring-bg" cx="100" cy="100" r="86"></circle>
         <path class="ring-fill" id="mRing" d=""></path>
         <g id="mTicks"></g>
-        <line class="hand" id="mHand" x1="100" y1="100" x2="100" y2="26"></line>
-        <circle class="hub" cx="100" cy="100" r="4.5"></circle>
+        <circle class="puck" id="mPuck" cx="100" cy="14" r="6.5"></circle>
       </svg>
       <div class="readout">
         <div class="big" id="mBig">100</div>
@@ -74,7 +73,7 @@
           <select id="beats"></select>
         </div>
         <div class="row"><div class="stack"><span class="lbl" id="subLbl">Dělení doby</span></div></div>
-        <div class="seg" id="subSeg" role="group" aria-labelledby="subLbl" style="margin-top:-6px">
+        <div class="seg" id="subSeg" role="group" aria-labelledby="subLbl">
           <button type="button" data-sub="1" aria-label="Dělení doby: Čtvrtky" aria-pressed="true">Čtvrtky</button>
           <button type="button" data-sub="2" aria-label="Dělení doby: Osminy" aria-pressed="false">Osminy</button>
           <button type="button" data-sub="3" aria-label="Dělení doby: Triola" aria-pressed="false">Triola</button>
@@ -176,8 +175,7 @@
         <circle class="ring-bg" cx="100" cy="100" r="86"></circle>
         <path class="ring-fill" id="gRing" d=""></path>
         <g id="gTicks"></g>
-        <line class="hand" id="gHand" x1="100" y1="100" x2="100" y2="26"></line>
-        <circle class="hub" cx="100" cy="100" r="4.5"></circle>
+        <circle class="puck" id="gPuck" cx="100" cy="14" r="6.5"></circle>
       </svg>
       <div class="readout">
         <div class="big" id="gBig">24/8</div>
@@ -360,7 +358,7 @@
         <div class="stack"><span class="lbl" id="themeLbl">Motiv</span>
           <span class="hint">Na slunci se hodí světlý</span></div>
       </div>
-      <div class="seg" id="themeSeg" role="group" aria-labelledby="themeLbl" style="margin-top:4px">
+      <div class="seg" id="themeSeg" role="group" aria-labelledby="themeLbl">
         <button type="button" data-theme="auto" aria-pressed="true">Systém</button>
         <button type="button" data-theme="light" aria-pressed="false">Světlý</button>
         <button type="button" data-theme="dark" aria-pressed="false">Tmavý</button>
@@ -450,10 +448,10 @@
 </div>
 
 <nav class="nav" role="tablist" aria-label="Hlavní navigace">
-  <button type="button" id="tab-music"    role="tab" aria-selected="true"  aria-controls="view-music"><span class="ic" aria-hidden="true">◴</span>Metronom</button>
-  <button type="button" id="tab-golf"     role="tab" aria-selected="false" aria-controls="view-golf"><span class="ic" aria-hidden="true">⛳</span>Golf</button>
-  <button type="button" id="tab-stats"    role="tab" aria-selected="false" aria-controls="view-stats"><span class="ic" aria-hidden="true">▥</span>Statistiky</button>
-  <button type="button" id="tab-settings" role="tab" aria-selected="false" aria-controls="view-settings"><span class="ic" aria-hidden="true">⚙</span>Nastavení</button>
+  <button type="button" id="tab-music"    role="tab" aria-selected="true"  aria-controls="view-music"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg></span>Metronom</button>
+  <button type="button" id="tab-golf"     role="tab" aria-selected="false" aria-controls="view-golf"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 20V3l8 3.5L9 10"/><path d="M5 20h10"/></svg></span>Golf</button>
+  <button type="button" id="tab-stats"    role="tab" aria-selected="false" aria-controls="view-stats"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12"/><path d="M12 20V5"/><path d="M19 20v-5"/></svg></span>Statistiky</button>
+  <button type="button" id="tab-settings" role="tab" aria-selected="false" aria-controls="view-settings"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg></span>Nastavení</button>
 </nav>
 
 <dialog id="confirmDlg" aria-labelledby="confirmTitle">

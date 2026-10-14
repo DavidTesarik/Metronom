@@ -373,7 +373,7 @@ function stop() {
   $("mPlay").textContent = "Spustit"; $("mPlay").classList.remove("on");
   $("gPlay").textContent = "Spustit"; $("gPlay").classList.remove("on");
   $("mRing").setAttribute("d", ""); $("gRing").setAttribute("d", "");
-  setHand("mHand", 0); setHand("gHand", 180);
+  setPuck("mPuck", 0); setPuck("gPuck", 180);
   Array.prototype.forEach.call(document.querySelectorAll(".dot"), function (d) { d.classList.remove("on"); });
   Array.prototype.forEach.call(document.querySelectorAll(".gdot"), function (d) { d.classList.remove("on"); });
   $("mLive").textContent = "Metronom zastaven.";
@@ -400,14 +400,17 @@ function arcPath(r, a0, a1) {
          " A" + r + " " + r + " 0 " + (Math.abs(d) > 180 ? 1 : 0) + " " + (d >= 0 ? 1 : 0) +
          " " + p1[0].toFixed(2) + " " + p1[1].toFixed(2);
 }
-function setHand(id, angle) {
-  $(id).setAttribute("transform", "rotate(" + angle.toFixed(2) + " 100 100)");
+function setPuck(id, angle) {
+  var p = polar(86, angle);
+  var el = $(id);
+  el.setAttribute("cx", p[0].toFixed(2));
+  el.setAttribute("cy", p[1].toFixed(2));
 }
 function buildTicks(id, angles, firstHighlight) {
   var g = $(id);
   g.innerHTML = "";
   angles.forEach(function (a, i) {
-    var p1 = polar(78, a), p2 = polar(firstHighlight && i === 0 ? 66 : 70, a);
+    var p1 = polar(firstHighlight && i === 0 ? 97 : 95, a), p2 = polar(88, a);
     var l = document.createElementNS("http://www.w3.org/2000/svg", "line");
     l.setAttribute("x1", p1[0].toFixed(2)); l.setAttribute("y1", p1[1].toFixed(2));
     l.setAttribute("x2", p2[0].toFixed(2)); l.setAttribute("y2", p2[1].toFixed(2));
@@ -466,7 +469,7 @@ function frame() {
     } else if (now >= ev.t + ev.back + ev.down) {
       stage = 2;
     }
-    setHand("gHand", ang);
+    setPuck("gPuck", ang);
     $("gRing").setAttribute("d", stage < 0 ? "" : arcPath(86, 180, ang));
     var gd = document.querySelectorAll("#gDots .gdot");
     var on = [
@@ -486,7 +489,7 @@ function frame() {
   } else {
     var barDur = (60 / MS.bpm) * MS.beats;
     var p = Math.min(1, ev.phase + Math.max(0, now - ev.t) / barDur);
-    setHand("mHand", Math.min(359.5, p * 360));
+    setPuck("mPuck", Math.min(359.5, p * 360));
     $("mRing").setAttribute("d", arcPath(86, 0, Math.min(359.5, p * 360)));
   }
 }
@@ -1160,8 +1163,15 @@ document.addEventListener("visibilitychange", function () {
 
 /* ============================== INICIALIZACE ============================== */
 
+function markRangeRows() {
+  Array.prototype.forEach.call(document.querySelectorAll(".row"), function (r) {
+    if (r.querySelector('input[type="range"]')) r.classList.add("rng");
+  });
+}
+
 function syncUI() {
   applyTheme(S.settings.theme);
+  markRangeRows();
 
   $("bpmRange").value = MS.bpm;
   beatsSel.value = MS.beats;
@@ -1202,8 +1212,8 @@ function syncUI() {
   renderGolfPresets();
   renderPresetList("musicPresets", "music");
   renderPresetList("golfUserPresets", "golf");
-  setHand("mHand", 0);
-  setHand("gHand", 180);
+  setPuck("mPuck", 0);
+  setPuck("gPuck", 180);
 }
 
 syncUI();
